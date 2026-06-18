@@ -28,12 +28,16 @@
   a{color:var(--accent-dark);}
   button{font-family:var(--font-body);cursor:pointer;}
   input,select,textarea{
-    font-family:var(--font-body);font-size:14.5px;color:var(--ink);
-    background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;
+    font-family:var(--font-body);font-size:16px;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:7px;padding:11px 12px;width:100%;
   }
   input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);}
-  label{display:block;font-size:12.5px;font-family:var(--font-mono);color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
-  .field{margin-bottom:12px;}
+  label{display:block;font-size:13px;font-family:var(--font-mono);color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px;}
+  .field{margin-bottom:14px;}
+  .addr-row{display:flex;gap:8px;align-items:stretch;}
+  .addr-row input{flex:1;}
+  .btn-locate{flex-shrink:0;min-width:46px;padding:0 14px;font-size:18px;}
+  .btn-locate:disabled{opacity:.5;}
   .hint{font-size:12px;color:var(--muted);margin-top:4px;font-family:var(--font-body);text-transform:none;letter-spacing:0;}
 
   /* ---- header ---- */
@@ -64,23 +68,12 @@
   fieldset{border:1px solid var(--line);border-radius:8px;padding:14px 14px 4px;margin:0 0 16px;}
   fieldset legend{font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-dark);padding:0 6px;}
 
-  details.ref{border:1px solid var(--line);border-radius:8px;}
-  details.ref summary{cursor:pointer;padding:13px 18px;font-family:var(--font-mono);font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);list-style:none;}
-  details.ref summary::-webkit-details-marker{display:none;}
-  details.ref summary:before{content:"▸ ";color:var(--accent);}
-  details.ref[open] summary:before{content:"▾ ";}
-  details.ref .ref-body{padding:0 18px 16px;font-size:13.5px;}
-  details.ref .ref-body h3{font-size:13px;margin:14px 0 4px;color:var(--ink);}
-  details.ref .ref-body ul{margin:4px 0 0;padding-left:18px;}
-  details.ref .ref-body li{margin-bottom:4px;}
-  details.ref code{font-family:var(--font-mono);background:var(--chip-bg);padding:1px 5px;border-radius:4px;}
-
   /* ---- door cards ---- */
   .door-card{border:1px solid var(--line);border-radius:9px;margin-bottom:14px;background:#fffdf9;}
   .door-head{display:flex;align-items:center;gap:8px;padding:4px 6px 4px 4px;}
-  .door-toggle{flex:1;display:flex;align-items:center;gap:10px;background:none;border:none;padding:10px 10px;text-align:left;}
+  .door-toggle{flex:1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:none;border:none;padding:14px 10px;text-align:left;min-height:48px;}
   .door-index{font-family:var(--font-mono);font-size:12px;background:var(--ink);color:#fff;border-radius:5px;padding:3px 8px;}
-  .door-title{font-weight:700;font-size:14.5px;flex-shrink:0;}
+  .door-title{font-weight:700;font-size:15px;flex-shrink:0;}
   .door-chips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;margin-right:8px;}
   .chip{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border-radius:12px;background:var(--chip-bg);color:var(--ink-soft);white-space:nowrap;}
   .chip.fire{background:#fde7da;color:var(--accent-dark);}
@@ -89,19 +82,23 @@
   .chip.warn{background:var(--warn-bg);color:var(--warn);font-weight:700;}
   .chev{font-size:14px;color:var(--muted);transition:transform .15s ease;margin-right:4px;}
   .door-toggle[aria-expanded="false"] .chev{transform:rotate(-90deg);}
-  .door-remove{background:none;border:none;color:var(--warn);font-size:16px;padding:8px 12px;border-radius:6px;}
+  .door-remove{background:none;border:none;color:var(--warn);font-size:18px;padding:12px 14px;min-width:46px;min-height:46px;border-radius:8px;}
   .door-remove:hover{background:var(--warn-bg);}
+  @media (max-width:600px){
+    .door-chips{flex:1 1 100%;margin-left:0;order:5;}
+  }
   .door-body{padding:4px 16px 16px;border-top:1px solid var(--line);}
   .door-body[hidden]{display:none;}
-  .checkbox-row{display:flex;flex-wrap:wrap;gap:10px 16px;margin-bottom:8px;}
-  .checkbox-row label.cb{display:flex;align-items:center;gap:6px;font-family:var(--font-body);text-transform:none;font-size:13.5px;color:var(--ink);letter-spacing:0;}
-  .checkbox-row input[type=checkbox]{width:auto;}
+  .checkbox-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+  .checkbox-row label.cb{display:flex;align-items:center;gap:8px;font-family:var(--font-body);text-transform:none;font-size:13.5px;color:var(--ink);letter-spacing:0;border:1px solid var(--line);border-radius:20px;padding:9px 14px;min-height:40px;background:#fff;}
+  .checkbox-row label.cb:has(input:checked){background:#fdece0;border-color:var(--accent);color:var(--accent-dark);font-weight:600;}
+  .checkbox-row input[type=checkbox]{width:18px;height:18px;flex-shrink:0;}
   .warnings-box{margin-top:6px;}
   .warn-item{background:var(--warn-bg);border-left:3px solid var(--warn);color:#7d2a18;font-size:13px;padding:8px 10px;border-radius:4px;margin-bottom:6px;}
   .ok-note{font-size:12.5px;color:var(--ok);font-family:var(--font-mono);}
 
   /* ---- buttons ---- */
-  .btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 16px;border-radius:7px;font-size:13.5px;font-weight:600;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:13px 18px;min-height:46px;border-radius:8px;font-size:14.5px;font-weight:600;}
   .btn:hover{border-color:var(--accent);}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
   .btn.primary:hover{background:var(--accent-dark);}
@@ -113,6 +110,16 @@
   footer.toolbar .grp{display:flex;gap:8px;flex-wrap:wrap;}
   #fileInput{display:none;}
 
+  @media (max-width:600px){
+    .add-door-wrap .btn{width:100%;}
+    footer.toolbar .wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    footer.toolbar .grp{display:contents;}
+    footer.toolbar .btn{width:100%;}
+    main{padding-bottom:190px;}
+    section.panel > .panel-body{padding:14px;}
+    fieldset{padding:12px 12px 4px;}
+  }
+
   .note-box{background:#fdf6e8;border:1px solid #ecd9a3;border-radius:7px;padding:10px 14px;font-size:13px;color:#6b5210;margin-top:10px;}
 
   /* ---- print ---- */
@@ -123,7 +130,6 @@
     section.panel{break-inside:avoid;border:1px solid #ccc;margin-bottom:10px;}
     .door-card{break-inside:avoid;}
     .door-body[hidden]{display:block !important;}
-    details.ref{break-inside:avoid;}
     a{text-decoration:none;color:inherit;}
   }
 </style>
@@ -141,43 +147,20 @@
 
 <main>
 
-  <details class="ref">
-    <summary>Normen &amp; Schnellreferenz (zum Nachschlagen vor Ort)</summary>
-    <div class="ref-body">
-      <h3>Relevante Regelwerke</h3>
-      <ul>
-        <li><code>VdS 2358 / 2359</code> — Anforderungen und Prüfmethoden für Zutrittskontrollanlagen.</li>
-        <li><code>VdS 2367</code> — Planung und Einbau von Zutrittskontrollanlagen.</li>
-        <li><code>DIN EN 179</code> — Türen im Fluchtweg mit Antipanik-Drückergarnitur (Personenzahl/Nutzung mit Fluchtwegkenntnis).</li>
-        <li><code>DIN EN 1125</code> — Paniktürverschlüsse mit horizontaler Stoßstange (öffentlich zugängliche Fluchtwege).</li>
-        <li><code>DIN 4102 / DIN EN 1634</code> — Brandschutzanforderungen an Türelemente; Nachrüstungen an Brandschutztüren nur mit gültiger Zulassung (DIBt) vornehmen.</li>
-        <li><code>DIN VDE 0833-3</code> — Festlegungen für Einbruch-/Überfallmeldeanlagen, oft mit Zutrittskontrolle gekoppelt.</li>
-        <li><code>AMEV "eZKA"</code> — Empfehlung zu Planung, Ausschreibung, Abnahme und Betrieb elektronischer Zutrittskontrollanlagen (u. a. Netzwerk-/IT-Abstimmung).</li>
-        <li>DSGVO Art. 9 — Biometrische Daten und Zeiterfassung sind mitbestimmungspflichtig; Betriebsrat/Datenschutzbeauftragten frühzeitig einbinden.</li>
-      </ul>
-      <h3>Schnittstellen &amp; Kabelstrecken (Richtwerte, herstellerabhängig)</h3>
-      <ul>
-        <li><strong>Wiegand</strong>: einfach, unidirektional, unverschlüsselt; Kabelstrecke Leser–Controller i. d. R. bis ca. 30 m.</li>
-        <li><strong>RS-485 / OSDP</strong>: bidirektional, verschlüsselbar, Sabotageerkennung möglich; deutlich größere Reichweite (oft mehrere hundert Meter, kabelabhängig), Multidrop für mehrere Leser an einem Bus.</li>
-        <li><strong>Netzwerk-Leser (IP/PoE)</strong>: Versorgung und Datenübertragung über ein Cat-Kabel; freie Switch-Ports und IP-Adressvergabe mit der IT klären.</li>
-        <li>Empfohlenes Kabel für Busleitungen: geschirmtes Mehrpaar-Kabel (z. B. JY(St)Y); Stichleitungen kurz halten, Abschlusswiderstände an den Enden beachten.</li>
-      </ul>
-      <h3>Verriegelung &amp; Fluchtwege</h3>
-      <ul>
-        <li><strong>Fail-Safe</strong> (stromlos entriegelt): bei Stromausfall/Brandalarm öffnet die Tür — für Fluchtwegtüren in der Regel die richtige Wahl.</li>
-        <li><strong>Fail-Secure</strong> (stromlos verriegelt): bleibt bei Stromausfall verriegelt — nur zulässig, wenn ein mechanischer oder alternativer Freigabeweg für den Fluchtfall vorhanden ist.</li>
-        <li>Brandmeldeanlagen-Anbindung: Türen, die im Alarmfall freigegeben werden müssen, benötigen ein eigenes Freigaberelais/-eingang am Controller.</li>
-      </ul>
-    </div>
-  </details>
-
   <section class="panel" id="projectSection">
     <div class="panel-head"><h2>Projekt &amp; Anlage</h2></div>
     <div class="panel-body">
       <div class="grid cols-4">
         <div class="field"><label>Projekt</label><input data-field="projekt" placeholder="z. B. Bürogebäude Müller GmbH"></div>
         <div class="field"><label>Kunde</label><input data-field="kunde"></div>
-        <div class="field"><label>Adresse / Standort</label><input data-field="adresse"></div>
+        <div class="field">
+          <label>Adresse / Standort</label>
+          <div class="addr-row">
+            <input data-field="adresse" id="adresseInput">
+            <button type="button" class="btn ghost btn-locate" id="locateBtn" title="Aktuellen Standort verwenden">📍</button>
+          </div>
+          <div class="hint" id="locateStatus"></div>
+        </div>
         <div class="field"><label>Techniker</label><input data-field="techniker"></div>
       </div>
       <div class="grid cols-4">
@@ -293,9 +276,16 @@
 (function(){
   "use strict";
 
+  function todayISO(){
+    const d = new Date();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return d.getFullYear()+"-"+m+"-"+day;
+  }
+
   function defaultProject(){
     return {
-      projekt:"",kunde:"",adresse:"",techniker:"",datum:"",
+      projekt:"",kunde:"",adresse:"",techniker:"",datum:todayISO(),
       gebaeudeart:"bestand",schutzbedarf:"mittel",nutzerzahl:"",
       architektur:"vernetzt",zentraleStandort:"",software:"lokal",lizenzplaetze:"",
       netzwerkVorhanden:"ja",switchPortsFrei:"",ipAdressenFrei:"unbekannt",vlanGetrennt:"unbekannt",
@@ -366,9 +356,6 @@
     }
     if (d.leserSchnittstelle==="RS-485 / OSDP" && d.distanzLeserController && Number(d.distanzLeserController)>600){
       w.push("RS-485-Strecke "+d.distanzLeserController+" m liegt über dem typischen Richtwert (~600 m, kabelabhängig) – Repeater/zusätzlichen Controller einplanen.");
-    }
-    if (d.innenAussen==="aussen" && d.wetterschutz!=="ja"){
-      w.push("Außenmontage ohne vermerkten Wetterschutz: witterungsbeständigen Leser (IP65 oder höher) einplanen.");
     }
     if (d.stromVorOrt==="nein"){
       w.push("Keine Stromversorgung am Einbauort vorhanden – Zuleitung/Netzteil in die Kalkulation aufnehmen.");
@@ -535,9 +522,8 @@
 
   function updateSummary(){
     const total = doors.length;
-    let warnTotal = 0, fire=0, exitDoors=0, net=0;
+    let fire=0, exitDoors=0, net=0;
     doors.forEach(function(d){
-      warnTotal += warningsForDoor(d).length;
       if (d.bmaAnbindung==="ja") fire++;
       if (d.fluchtweg==="ja") exitDoors++;
       if (d.leserSchnittstelle==="Netzwerk (IP-Leser/PoE)") net++;
@@ -547,8 +533,7 @@
       '<span class="stat">Türen: '+total+'</span>'+
       '<span class="stat">Netzwerk-Leser: '+net+'</span>'+
       '<span class="stat">BMA-Anbindung: '+fire+'</span>'+
-      '<span class="stat">Fluchttüren: '+exitDoors+'</span>'+
-      '<span class="stat'+(warnTotal>0?' warn':'')+'">Warnungen: '+warnTotal+'</span>';
+      '<span class="stat">Fluchttüren: '+exitDoors+'</span>';
 
     const noteEl = $("#projectNote");
     const needsBetriebsrat = doors.some(function(d){ return d.identmedium.indexOf("Fingerprint")>-1 || d.identmedium.indexOf("Gesichtserkennung")>-1; }) || project.zeiterfassung==="ja";
@@ -707,6 +692,51 @@
     reader.readAsText(file);
     e.target.value = "";
   });
+
+  // ---- GPS-Standort ----
+  function setLocateStatus(msg, isError){
+    const el = $("#locateStatus");
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = isError ? "var(--warn)" : "var(--muted)";
+  }
+
+  function locateAddress(){
+    if (!navigator.geolocation){
+      setLocateStatus("Geolocation wird von diesem Browser/Gerät nicht unterstützt.", true);
+      return;
+    }
+    const btn = $("#locateBtn");
+    btn.disabled = true;
+    setLocateStatus("Standort wird ermittelt…");
+    navigator.geolocation.getCurrentPosition(function(pos){
+      const lat = pos.coords.latitude, lon = pos.coords.longitude;
+      const coordStr = lat.toFixed(6)+", "+lon.toFixed(6);
+      fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="+lat+"&lon="+lon+"&zoom=18&addressdetails=1")
+        .then(function(r){ if(!r.ok) throw new Error("bad response"); return r.json(); })
+        .then(function(data){
+          const addr = (data && data.display_name) ? data.display_name : coordStr;
+          project.adresse = addr;
+          fillProjectForm();
+          setLocateStatus("Standort übernommen.");
+          btn.disabled = false;
+        })
+        .catch(function(){
+          project.adresse = coordStr;
+          fillProjectForm();
+          setLocateStatus("Keine Internetverbindung für Adressauflösung – GPS-Koordinaten eingetragen.", true);
+          btn.disabled = false;
+        });
+    }, function(err){
+      btn.disabled = false;
+      let msg = "Standort konnte nicht ermittelt werden.";
+      if (err.code===1) msg = "Standortzugriff verweigert – bitte in den Geräteeinstellungen erlauben.";
+      if (err.code===2) msg = "Standort aktuell nicht verfügbar.";
+      if (err.code===3) msg = "Zeitüberschreitung bei der Standortermittlung.";
+      setLocateStatus(msg, true);
+    }, { enableHighAccuracy:true, timeout:12000, maximumAge:0 });
+  }
+  $("#locateBtn").addEventListener("click", locateAddress);
 
   // ---- init ----
   fillProjectForm();
