@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zutrittskontrolle – Planungstool für den Außendienst</title>
+<style>
+  :root{
+    --ink:#16222c;
+    --ink-soft:#3a4a56;
+    --paper:#f5f2ea;
+    --card:#ffffff;
+    --line:#e0dac9;
+    --accent:#d6601f;
+    --accent-dark:#a84a16;
+    --ok:#2e7d63;
+    --warn:#c1432b;
+    --warn-bg:#fbeae6;
+    --muted:#6b7280;
+    --chip-bg:#eef0ee;
+    --font-display:'Arial Narrow', 'Helvetica Neue Condensed', Arial, sans-serif;
+    --font-body:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+    --font-mono:ui-monospace,'Cascadia Mono','Consolas','SFMono-Regular',Menlo,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;}
+  h1,h2,h3{font-family:var(--font-display);font-weight:700;letter-spacing:.02em;color:var(--ink);margin:0;}
+  a{color:var(--accent-dark);}
+  button{font-family:var(--font-body);cursor:pointer;}
+  input,select,textarea{
+    font-family:var(--font-body);font-size:14.5px;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);}
+  label{display:block;font-size:12.5px;font-family:var(--font-mono);color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+  .field{margin-bottom:12px;}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px;font-family:var(--font-body);text-transform:none;letter-spacing:0;}
+
+  /* ---- header ---- */
+  header.top{
+    position:sticky;top:0;z-index:20;background:var(--ink);color:#f5f2ea;
+    padding:14px 18px;box-shadow:0 2px 10px rgba(0,0,0,.18);
+  }
+  header.top .wrap{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-content:space-between;}
+  header.top h1{font-size:21px;color:#fff;}
+  header.top .sub{font-size:12.5px;color:#c7cdd1;font-family:var(--font-mono);letter-spacing:.02em;}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;}
+  .stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 12px;font-size:12.5px;font-family:var(--font-mono);color:#f0ede4;white-space:nowrap;}
+  .stat.warn{background:rgba(193,67,43,.25);border-color:rgba(193,67,43,.6);color:#ffdcd2;}
+
+  /* ---- layout ---- */
+  main{max-width:1100px;margin:0 auto;padding:20px 18px 110px;}
+  section.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:18px;overflow:hidden;}
+  section.panel > .panel-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  section.panel > .panel-head h2{font-size:15px;text-transform:uppercase;}
+  section.panel > .panel-body{padding:18px;}
+  .eyebrow{font-family:var(--font-mono);font-size:11.5px;color:var(--accent-dark);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px;display:block;}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 16px;}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:760px){.grid,.grid.cols-2,.grid.cols-4{grid-template-columns:1fr;}}
+
+  fieldset{border:1px solid var(--line);border-radius:8px;padding:14px 14px 4px;margin:0 0 16px;}
+  fieldset legend{font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-dark);padding:0 6px;}
+
+  details.ref{border:1px solid var(--line);border-radius:8px;}
+  details.ref summary{cursor:pointer;padding:13px 18px;font-family:var(--font-mono);font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);list-style:none;}
+  details.ref summary::-webkit-details-marker{display:none;}
+  details.ref summary:before{content:"▸ ";color:var(--accent);}
+  details.ref[open] summary:before{content:"▾ ";}
+  details.ref .ref-body{padding:0 18px 16px;font-size:13.5px;}
+  details.ref .ref-body h3{font-size:13px;margin:14px 0 4px;color:var(--ink);}
+  details.ref .ref-body ul{margin:4px 0 0;padding-left:18px;}
+  details.ref .ref-body li{margin-bottom:4px;}
+  details.ref code{font-family:var(--font-mono);background:var(--chip-bg);padding:1px 5px;border-radius:4px;}
+
+  /* ---- door cards ---- */
+  .door-card{border:1px solid var(--line);border-radius:9px;margin-bottom:14px;background:#fffdf9;}
+  .door-head{display:flex;align-items:center;gap:8px;padding:4px 6px 4px 4px;}
+  .door-toggle{flex:1;display:flex;align-items:center;gap:10px;background:none;border:none;padding:10px 10px;text-align:left;}
+  .door-index{font-family:var(--font-mono);font-size:12px;background:var(--ink);color:#fff;border-radius:5px;padding:3px 8px;}
+  .door-title{font-weight:700;font-size:14.5px;flex-shrink:0;}
+  .door-chips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;margin-right:8px;}
+  .chip{font-family:var(--font-mono);font-size:11px;padding:2px 8px;border-radius:12px;background:var(--chip-bg);color:var(--ink-soft);white-space:nowrap;}
+  .chip.fire{background:#fde7da;color:var(--accent-dark);}
+  .chip.exit{background:#e6f0ec;color:var(--ok);}
+  .chip.net{background:#e7ecf5;color:#33507a;}
+  .chip.warn{background:var(--warn-bg);color:var(--warn);font-weight:700;}
+  .chev{font-size:14px;color:var(--muted);transition:transform .15s ease;margin-right:4px;}
+  .door-toggle[aria-expanded="false"] .chev{transform:rotate(-90deg);}
+  .door-remove{background:none;border:none;color:var(--warn);font-size:16px;padding:8px 12px;border-radius:6px;}
+  .door-remove:hover{background:var(--warn-bg);}
+  .door-body{padding:4px 16px 16px;border-top:1px solid var(--line);}
+  .door-body[hidden]{display:none;}
+  .checkbox-row{display:flex;flex-wrap:wrap;gap:10px 16px;margin-bottom:8px;}
+  .checkbox-row label.cb{display:flex;align-items:center;gap:6px;font-family:var(--font-body);text-transform:none;font-size:13.5px;color:var(--ink);letter-spacing:0;}
+  .checkbox-row input[type=checkbox]{width:auto;}
+  .warnings-box{margin-top:6px;}
+  .warn-item{background:var(--warn-bg);border-left:3px solid var(--warn);color:#7d2a18;font-size:13px;padding:8px 10px;border-radius:4px;margin-bottom:6px;}
+  .ok-note{font-size:12.5px;color:var(--ok);font-family:var(--font-mono);}
+
+  /* ---- buttons ---- */
+  .btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 16px;border-radius:7px;font-size:13.5px;font-weight:600;}
+  .btn:hover{border-color:var(--accent);}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn.primary:hover{background:var(--accent-dark);}
+  .btn.ghost{background:transparent;}
+  .add-door-wrap{padding:14px 18px;}
+
+  footer.toolbar{position:sticky;bottom:0;z-index:20;background:#fff;border-top:1px solid var(--line);padding:10px 18px;box-shadow:0 -3px 10px rgba(0,0,0,.07);}
+  footer.toolbar .wrap{max-width:1100px;margin:0 auto;display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;}
+  footer.toolbar .grp{display:flex;gap:8px;flex-wrap:wrap;}
+  #fileInput{display:none;}
+
+  .note-box{background:#fdf6e8;border:1px solid #ecd9a3;border-radius:7px;padding:10px 14px;font-size:13px;color:#6b5210;margin-top:10px;}
+
+  /* ---- print ---- */
+  @media print{
+    header.top, footer.toolbar, .no-print{display:none !important;}
+    body{background:#fff;}
+    main{padding:0;max-width:none;}
+    section.panel{break-inside:avoid;border:1px solid #ccc;margin-bottom:10px;}
+    .door-card{break-inside:avoid;}
+    .door-body[hidden]{display:block !important;}
+    details.ref{break-inside:avoid;}
+    a{text-decoration:none;color:inherit;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div>
+      <h1>ZuKo Planungstool</h1>
+    </div>
+    <div class="stats" id="statBar"></div>
+  </div>
+</header>
+
+<main>
+
+  <details class="ref">
+    <summary>Normen &amp; Schnellreferenz (zum Nachschlagen vor Ort)</summary>
+    <div class="ref-body">
+      <h3>Relevante Regelwerke</h3>
+      <ul>
+        <li><code>VdS 2358 / 2359</code> — Anforderungen und Prüfmethoden für Zutrittskontrollanlagen.</li>
+        <li><code>VdS 2367</code> — Planung und Einbau von Zutrittskontrollanlagen.</li>
+        <li><code>DIN EN 179</code> — Türen im Fluchtweg mit Antipanik-Drückergarnitur (Personenzahl/Nutzung mit Fluchtwegkenntnis).</li>
+        <li><code>DIN EN 1125</code> — Paniktürverschlüsse mit horizontaler Stoßstange (öffentlich zugängliche Fluchtwege).</li>
+        <li><code>DIN 4102 / DIN EN 1634</code> — Brandschutzanforderungen an Türelemente; Nachrüstungen an Brandschutztüren nur mit gültiger Zulassung (DIBt) vornehmen.</li>
+        <li><code>DIN VDE 0833-3</code> — Festlegungen für Einbruch-/Überfallmeldeanlagen, oft mit Zutrittskontrolle gekoppelt.</li>
+        <li><code>AMEV "eZKA"</code> — Empfehlung zu Planung, Ausschreibung, Abnahme und Betrieb elektronischer Zutrittskontrollanlagen (u. a. Netzwerk-/IT-Abstimmung).</li>
+        <li>DSGVO Art. 9 — Biometrische Daten und Zeiterfassung sind mitbestimmungspflichtig; Betriebsrat/Datenschutzbeauftragten frühzeitig einbinden.</li>
+      </ul>
+      <h3>Schnittstellen &amp; Kabelstrecken (Richtwerte, herstellerabhängig)</h3>
+      <ul>
+        <li><strong>Wiegand</strong>: einfach, unidirektional, unverschlüsselt; Kabelstrecke Leser–Controller i. d. R. bis ca. 30 m.</li>
+        <li><strong>RS-485 / OSDP</strong>: bidirektional, verschlüsselbar, Sabotageerkennung möglich; deutlich größere Reichweite (oft mehrere hundert Meter, kabelabhängig), Multidrop für mehrere Leser an einem Bus.</li>
+        <li><strong>Netzwerk-Leser (IP/PoE)</strong>: Versorgung und Datenübertragung über ein Cat-Kabel; freie Switch-Ports und IP-Adressvergabe mit der IT klären.</li>
+        <li>Empfohlenes Kabel für Busleitungen: geschirmtes Mehrpaar-Kabel (z. B. JY(St)Y); Stichleitungen kurz halten, Abschlusswiderstände an den Enden beachten.</li>
+      </ul>
+      <h3>Verriegelung &amp; Fluchtwege</h3>
+      <ul>
+        <li><strong>Fail-Safe</strong> (stromlos entriegelt): bei Stromausfall/Brandalarm öffnet die Tür — für Fluchtwegtüren in der Regel die richtige Wahl.</li>
+        <li><strong>Fail-Secure</strong> (stromlos verriegelt): bleibt bei Stromausfall verriegelt — nur zulässig, wenn ein mechanischer oder alternativer Freigabeweg für den Fluchtfall vorhanden ist.</li>
+        <li>Brandmeldeanlagen-Anbindung: Türen, die im Alarmfall freigegeben werden müssen, benötigen ein eigenes Freigaberelais/-eingang am Controller.</li>
+      </ul>
+    </div>
+  </details>
+
+  <section class="panel" id="projectSection">
+    <div class="panel-head"><h2>Projekt &amp; Anlage</h2></div>
+    <div class="panel-body">
+      <div class="grid cols-4">
+        <div class="field"><label>Projekt</label><input data-field="projekt" placeholder="z. B. Bürogebäude Müller GmbH"></div>
+        <div class="field"><label>Kunde</label><input data-field="kunde"></div>
+        <div class="field"><label>Adresse / Standort</label><input data-field="adresse"></div>
+        <div class="field"><label>Techniker</label><input data-field="techniker"></div>
+      </div>
+      <div class="grid cols-4">
+        <div class="field"><label>Datum</label><input type="date" data-field="datum"></div>
+        <div class="field"><label>Gebäudeart</label>
+          <select data-field="gebaeudeart">
+            <option value="bestand">Bestandsgebäude</option>
+            <option value="neubau">Neubau</option>
+            <option value="sanierung">Sanierung / Umbau</option>
+          </select>
+        </div>
+        <div class="field"><label>Schutzbedarf</label>
+          <select data-field="schutzbedarf">
+            <option value="niedrig">Niedrig (Standard-Büro)</option>
+            <option value="mittel">Mittel (sensible Bereiche vorhanden)</option>
+            <option value="hoch">Hoch (Wertschutz / Hochsicherheit)</option>
+          </select>
+        </div>
+        <div class="field"><label>Geschätzte Nutzerzahl</label><input type="number" min="0" data-field="nutzerzahl"></div>
+      </div>
+
+      <fieldset>
+        <legend>Systemarchitektur</legend>
+        <div class="grid cols-4">
+          <div class="field"><label>Architektur</label>
+            <select data-field="architektur">
+              <option value="standalone">Stand-alone je Tür (autark)</option>
+              <option value="vernetzt">Vernetzt, verkabelt (zentraler Controller)</option>
+              <option value="cloud">Cloud-basiert (Online-Verwaltung)</option>
+              <option value="hybrid">Hybrid (Online-Update, offline Türen)</option>
+            </select>
+          </div>
+          <div class="field"><label>Standort Zentrale/Controller</label><input data-field="zentraleStandort" placeholder="z. B. Technikraum EG"></div>
+          <div class="field"><label>Software</label>
+            <select data-field="software">
+              <option value="lokal">Lokaler Server beim Kunden</option>
+              <option value="cloud">Cloud / SaaS-Lösung</option>
+              <option value="erweiterung">Bestehende Software erweitern</option>
+            </select>
+          </div>
+          <div class="field"><label>Anzahl Arbeitsplätze/Lizenzen</label><input type="number" min="0" data-field="lizenzplaetze"></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>IT &amp; Netzwerk</legend>
+        <div class="grid cols-4">
+          <div class="field"><label>Netzwerk vorhanden</label>
+            <select data-field="netzwerkVorhanden"><option value="ja">Ja</option><option value="nein">Nein</option><option value="teilweise">Teilweise</option></select>
+          </div>
+          <div class="field"><label>Freie Switch-Ports</label><input data-field="switchPortsFrei" placeholder="Anzahl / Standort"></div>
+          <div class="field"><label>Freie IP-Adressen geklärt</label>
+            <select data-field="ipAdressenFrei"><option value="ja">Ja</option><option value="nein">Nein</option><option value="unbekannt">Noch zu klären mit IT</option></select>
+          </div>
+          <div class="field"><label>Eigenes VLAN vorgesehen</label>
+            <select data-field="vlanGetrennt"><option value="ja">Ja</option><option value="nein">Nein</option><option value="unbekannt">Unbekannt</option></select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Stromversorgung Zentrale</legend>
+        <div class="grid cols-2">
+          <div class="field"><label>Stromversorgung / Absicherung</label><input data-field="stromVersorgungZentrale" placeholder="z. B. 230V Schaltschrank EG, eigene Sicherung"></div>
+          <div class="field"><label>USV / Notstrom vorhanden</label>
+            <select data-field="usvVorhanden"><option value="nein">Nein</option><option value="ja">Ja</option></select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Integration mit anderen Gewerken</legend>
+        <div class="grid cols-4">
+          <div class="field"><label>Brandmeldeanlage (BMA)</label><select data-field="bmaIntegration"><option value="nein">Nein</option><option value="ja">Ja</option></select></div>
+          <div class="field"><label>Einbruchmeldeanlage (EMA)</label><select data-field="emaIntegration"><option value="nein">Nein</option><option value="ja">Ja</option></select></div>
+          <div class="field"><label>Gebäudemanagement (GMS)</label><select data-field="gmsIntegration"><option value="nein">Nein</option><option value="ja">Ja</option></select></div>
+          <div class="field"><label>Aufzugsteuerung</label><select data-field="aufzugIntegration"><option value="nein">Nein</option><option value="ja">Ja</option></select></div>
+          <div class="field"><label>Zeiterfassung</label><select data-field="zeiterfassung"><option value="nein">Nein</option><option value="ja">Ja</option></select></div>
+          <div class="field"><label>Besuchermanagement</label><select data-field="besuchermanagement"><option value="nein">Nein</option><option value="ja">Ja</option></select></div>
+          <div class="field"><label>Wartungsvertrag gewünscht</label><select data-field="wartungsvertrag"><option value="nein">Nein</option><option value="ja">Ja</option></select></div>
+          <div class="field"><label>Schulung Endkunde nötig</label><select data-field="schulung"><option value="nein">Nein</option><option value="ja">Ja</option></select></div>
+        </div>
+      </fieldset>
+
+      <div class="field"><label>Notizen Projekt</label><textarea rows="2" data-field="notizen"></textarea></div>
+      <div id="projectNote"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Zutrittspunkte (Türen)</h2></div>
+    <div id="doorsContainer"></div>
+    <div class="add-door-wrap"><button class="btn primary" id="addDoorBtn" type="button">＋ Tür hinzufügen</button></div>
+  </section>
+
+</main>
+
+<footer class="toolbar no-print">
+  <div class="wrap">
+    <div class="grp">
+      <button class="btn" id="printBtn" type="button">⬇ PDF exportieren</button>
+      <button class="btn" id="shareBtn" type="button">Per E-Mail versenden</button>
+    </div>
+    <div class="grp">
+      <button class="btn ghost" id="saveBtn" type="button">💾 Speichern (Datei)</button>
+      <button class="btn ghost" id="loadBtn" type="button">📂 Laden (Datei)</button>
+    </div>
+  </div>
+  <input type="file" id="fileInput" accept="application/json">
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  function defaultProject(){
+    return {
+      projekt:"",kunde:"",adresse:"",techniker:"",datum:"",
+      gebaeudeart:"bestand",schutzbedarf:"mittel",nutzerzahl:"",
+      architektur:"vernetzt",zentraleStandort:"",software:"lokal",lizenzplaetze:"",
+      netzwerkVorhanden:"ja",switchPortsFrei:"",ipAdressenFrei:"unbekannt",vlanGetrennt:"unbekannt",
+      stromVersorgungZentrale:"",usvVorhanden:"nein",
+      bmaIntegration:"nein",emaIntegration:"nein",gmsIntegration:"nein",aufzugIntegration:"nein",
+      zeiterfassung:"nein",besuchermanagement:"nein",wartungsvertrag:"nein",schulung:"nein",
+      notizen:""
+    };
+  }
+
+  function defaultDoor(id){
+    return {
+      id:id, bezeichnung:"", geschossBereich:"", innenAussen:"aussen",
+      tuertyp:"Holz (Zimmertür)", oeffnungsrichtung:"Nach innen, DIN links",
+      brandschutztuer:"nein", fluchtweg:"nein",
+      verriegelungstyp:"Elektrischer Türöffner (Standard)", stromausfallVerhalten:"fail-safe",
+      tuerkontakt:"nein",
+      identmedium:[], leserAnordnung:"Nur außen", leserSchnittstelle:"Wiegand",
+      montageort:"Aufputz", wetterschutz:"entfaellt",
+      stromVorOrt:"unbekannt", distanzLeserController:"", distanzNetzwerk:"",
+      kabeltyp:"Noch offen", leerrohrVorhanden:"unbekannt", notstromAkku:"nein",
+      bmaAnbindung:"nein", schleusenfunktion:"nein", antiPassback:"nein",
+      zeitsteuerung:"nein", einbruchhemmung:"Keine besondere Anforderung", videoSprechstelle:"nein",
+      notizen:""
+    };
+  }
+
+  let project = defaultProject();
+  let doors = [];
+  let nextId = 1;
+
+  const $ = (sel,root)=> (root||document).querySelector(sel);
+  const $$ = (sel,root)=> Array.from((root||document).querySelectorAll(sel));
+
+  const IDENT_OPTIONS = [
+    "RFID-Karte/Transponder (125 kHz)",
+    "RFID-Karte/Transponder (13,56 MHz Mifare/DESFire)",
+    "PIN-Code / Tastatur",
+    "Fingerprint",
+    "Gesichtserkennung",
+    "Smartphone (BLE/NFC)",
+    "Mehrfaktor (Kombination)"
+  ];
+
+  function opt(value,label,selected){
+    return '<option value="'+value+'"'+(selected?' selected':'')+'>'+label+'</option>';
+  }
+  function selectHTML(field,id,options,current){
+    let h = '<select data-id="'+id+'" data-field="'+field+'">';
+    options.forEach(o=>{ h += opt(o.v,o.l, current===o.v); });
+    return h+'</select>';
+  }
+  function escapeAttr(s){ return (s||"").replace(/"/g,'&quot;'); }
+
+  function warningsForDoor(d){
+    const w = [];
+    if (d.fluchtweg==="ja" && d.stromausfallVerhalten==="fail-secure"){
+      w.push("Fluchttür mit Fail-Secure-Verriegelung: Im Fluchtfall muss ohne Schlüssel/Werkzeug geöffnet werden können (DIN EN 179/1125 prüfen, ggf. Paniktürbeschlag oder Fail-Safe wählen).");
+    }
+    if (d.bmaAnbindung==="ja" && d.stromausfallVerhalten!=="fail-safe"){
+      w.push("BMA-Anbindung vorgesehen, aber keine Fail-Safe-Freigabe: Tür muss im Brandalarm sicher freigegeben werden – Verriegelungsart oder Freigaberelais prüfen.");
+    }
+    if (d.brandschutztuer==="ja"){
+      w.push("Brandschutztür: Nachrüstung nur mit gültiger Zulassung (DIBt) zulässig – vor Bohrungen/Beschlagwechsel Zulassung des Türherstellers prüfen.");
+    }
+    if (d.leserSchnittstelle==="Wiegand" && d.distanzLeserController && Number(d.distanzLeserController)>30){
+      w.push("Wiegand-Strecke "+d.distanzLeserController+" m überschreitet die übliche Grenze von ca. 30 m – RS-485/OSDP oder Netzwerk-Leser einplanen.");
+    }
+    if (d.leserSchnittstelle==="RS-485 / OSDP" && d.distanzLeserController && Number(d.distanzLeserController)>600){
+      w.push("RS-485-Strecke "+d.distanzLeserController+" m liegt über dem typischen Richtwert (~600 m, kabelabhängig) – Repeater/zusätzlichen Controller einplanen.");
+    }
+    if (d.innenAussen==="aussen" && d.wetterschutz!=="ja"){
+      w.push("Außenmontage ohne vermerkten Wetterschutz: witterungsbeständigen Leser (IP65 oder höher) einplanen.");
+    }
+    if (d.stromVorOrt==="nein"){
+      w.push("Keine Stromversorgung am Einbauort vorhanden – Zuleitung/Netzteil in die Kalkulation aufnehmen.");
+    }
+    if (d.netzwerkBenoetigt && project.netzwerkVorhanden==="nein"){
+      w.push("Netzwerk-Leser geplant, aber kein Netzwerk am Standort vorhanden – Verkabelung oder WLAN/BLE-Alternative klären.");
+    }
+    return w;
+  }
+
+  function doorBadges(d, warnCount){
+    const chips = [];
+    if (d.fluchtweg==="ja") chips.push('<span class="chip exit">Fluchtweg</span>');
+    if (d.bmaAnbindung==="ja") chips.push('<span class="chip fire">BMA</span>');
+    if (d.leserSchnittstelle==="Netzwerk (IP-Leser/PoE)") chips.push('<span class="chip net">IP/PoE</span>');
+    if (warnCount>0) chips.push('<span class="chip warn">⚠ '+warnCount+'</span>');
+    return chips.join("");
+  }
+
+  function checkboxRowHTML(id, current){
+    return IDENT_OPTIONS.map(function(o){
+      const checked = current.indexOf(o)>-1 ? "checked" : "";
+      return '<label class="cb"><input type="checkbox" data-id="'+id+'" data-field="identmedium" value="'+escapeAttr(o)+'" '+checked+'> '+o+'</label>';
+    }).join("");
+  }
+
+  function doorCardHTML(d, index){
+    const w = warningsForDoor(d);
+    return ''+
+    '<div class="door-card" data-id="'+d.id+'">'+
+      '<div class="door-head">'+
+        '<button type="button" class="door-toggle" aria-expanded="true" data-toggle="'+d.id+'">'+
+          '<span class="chev">▾</span>'+
+          '<span class="door-index">Tür '+(index+1)+'</span>'+
+          '<span class="door-title" data-titlefor="'+d.id+'">'+(d.bezeichnung||"Unbenannt")+'</span>'+
+          '<span class="door-chips" data-chipsfor="'+d.id+'">'+doorBadges(d,w.length)+'</span>'+
+        '</button>'+
+        '<button type="button" class="door-remove" data-remove="'+d.id+'" title="Tür entfernen">✕</button>'+
+      '</div>'+
+      '<div class="door-body" data-bodyfor="'+d.id+'">'+
+
+        '<fieldset><legend>Allgemein</legend><div class="grid cols-4">'+
+          '<div class="field"><label>Bezeichnung / Standort</label><input data-id="'+d.id+'" data-field="bezeichnung" value="'+escapeAttr(d.bezeichnung)+'" placeholder="z. B. Haupteingang"></div>'+
+          '<div class="field"><label>Geschoss / Bereich</label><input data-id="'+d.id+'" data-field="geschossBereich" value="'+escapeAttr(d.geschossBereich)+'"></div>'+
+          '<div class="field"><label>Lage</label>'+selectHTML("innenAussen",d.id,[{v:"aussen",l:"Außenbereich"},{v:"innen",l:"Innenbereich"}],d.innenAussen)+'</div>'+
+          '<div class="field"></div>'+
+        '</div></fieldset>'+
+
+        '<fieldset><legend>Bauliche Gegebenheiten</legend><div class="grid cols-4">'+
+          '<div class="field"><label>Türtyp</label>'+selectHTML("tuertyp",d.id,[
+            {v:"Holz (Zimmertür)",l:"Holz (Zimmertür)"},
+            {v:"Holz (Brandschutztür)",l:"Holz (Brandschutztür)"},
+            {v:"Stahl (Brandschutztür)",l:"Stahl (Brandschutztür)"},
+            {v:"Glas (Ganzglas/Pendeltür)",l:"Glas (Ganzglas/Pendeltür)"},
+            {v:"Aluminium-Profiltür",l:"Aluminium-Profiltür"},
+            {v:"Rolltor/Sektionaltor",l:"Rolltor/Sektionaltor"},
+            {v:"Sonstige",l:"Sonstige"}
+          ],d.tuertyp)+'</div>'+
+          '<div class="field"><label>Öffnungsrichtung</label>'+selectHTML("oeffnungsrichtung",d.id,[
+            {v:"Nach innen, DIN links",l:"Nach innen, DIN links"},
+            {v:"Nach innen, DIN rechts",l:"Nach innen, DIN rechts"},
+            {v:"Nach außen, DIN links",l:"Nach außen, DIN links"},
+            {v:"Nach außen, DIN rechts",l:"Nach außen, DIN rechts"},
+            {v:"Schiebetür",l:"Schiebetür"},
+            {v:"Drehkreuz/Vereinzelungsanlage",l:"Drehkreuz/Vereinzelungsanlage"}
+          ],d.oeffnungsrichtung)+'</div>'+
+          '<div class="field"><label>Brandschutztür</label>'+selectHTML("brandschutztuer",d.id,[{v:"nein",l:"Nein"},{v:"ja",l:"Ja"}],d.brandschutztuer)+'</div>'+
+          '<div class="field"><label>Fluchtweg / Notausgang</label>'+selectHTML("fluchtweg",d.id,[{v:"nein",l:"Nein"},{v:"ja",l:"Ja"}],d.fluchtweg)+'</div>'+
+        '</div></fieldset>'+
+
+        '<fieldset><legend>Verriegelung</legend><div class="grid cols-4">'+
+          '<div class="field"><label>Verriegelungstyp</label>'+selectHTML("verriegelungstyp",d.id,[
+            {v:"Elektrischer Türöffner (Standard)",l:"Elektrischer Türöffner (Standard)"},
+            {v:"Elektrisches Motorschloss",l:"Elektrisches Motorschloss"},
+            {v:"Haftmagnet (Magnetverriegelung)",l:"Haftmagnet (Magnetverriegelung)"},
+            {v:"Elektronischer Türbeschlag (Mechatronik, batteriebetrieben)",l:"Elektronischer Türbeschlag (Mechatronik, batteriebetrieben)"},
+            {v:"Elektronischer Profilzylinder",l:"Elektronischer Profilzylinder"},
+            {v:"Drehkreuz/Schranke (Antrieb)",l:"Drehkreuz/Schranke (Antrieb)"}
+          ],d.verriegelungstyp)+'</div>'+
+          '<div class="field"><label>Verhalten bei Stromausfall</label>'+selectHTML("stromausfallVerhalten",d.id,[
+            {v:"fail-safe",l:"Fail-Safe – stromlos entriegelt"},
+            {v:"fail-secure",l:"Fail-Secure – stromlos verriegelt"}
+          ],d.stromausfallVerhalten)+'</div>'+
+          '<div class="field"><label>Tür-/Riegelkontakt</label>'+selectHTML("tuerkontakt",d.id,[{v:"nein",l:"Nein"},{v:"ja",l:"Ja"}],d.tuerkontakt)+'</div>'+
+          '<div class="field"><label>Einbruchhemmung</label>'+selectHTML("einbruchhemmung",d.id,[
+            {v:"Keine besondere Anforderung",l:"Keine besondere Anforderung"},
+            {v:"RC2",l:"RC2"},{v:"RC3",l:"RC3"},{v:"Höher/Sonderanforderung",l:"Höher/Sonderanforderung"}
+          ],d.einbruchhemmung)+'</div>'+
+        '</div></fieldset>'+
+
+        '<fieldset><legend>Identifikation</legend>'+
+          '<div class="checkbox-row">'+checkboxRowHTML(d.id,d.identmedium)+'</div>'+
+          '<div class="grid cols-4">'+
+          '<div class="field"><label>Leseranordnung</label>'+selectHTML("leserAnordnung",d.id,[
+            {v:"Nur außen",l:"Nur außen"},
+            {v:"Außen + Innen (Ein/Ausgangsbuchung)",l:"Außen + Innen (Ein/Ausgangsbuchung)"},
+            {v:"Nur innen",l:"Nur innen (z. B. Fluchttür-Monitoring)"}
+          ],d.leserAnordnung)+'</div>'+
+          '<div class="field"><label>Leser-Schnittstelle</label>'+selectHTML("leserSchnittstelle",d.id,[
+            {v:"Wiegand",l:"Wiegand"},
+            {v:"RS-485 / OSDP",l:"RS-485 / OSDP"},
+            {v:"Netzwerk (IP-Leser/PoE)",l:"Netzwerk (IP-Leser/PoE)"},
+            {v:"Bluetooth/BLE (autark)",l:"Bluetooth/BLE (autark, batteriebetrieben)"}
+          ],d.leserSchnittstelle)+'</div>'+
+          '<div class="field"><label>Montageort</label>'+selectHTML("montageort",d.id,[{v:"Aufputz",l:"Aufputz"},{v:"Unterputz",l:"Unterputz"},{v:"Noch offen",l:"Noch offen"}],d.montageort)+'</div>'+
+          '<div class="field"><label>Wetterschutz (IP65+) nötig</label>'+selectHTML("wetterschutz",d.id,[{v:"ja",l:"Ja"},{v:"nein",l:"Nein"},{v:"entfaellt",l:"Entfällt (innen)"}],d.wetterschutz)+'</div>'+
+          '</div>'+
+        '</fieldset>'+
+
+        '<fieldset><legend>Elektrotechnik / Verkabelung</legend><div class="grid cols-4">'+
+          '<div class="field"><label>Strom am Einbauort vorhanden</label>'+selectHTML("stromVorOrt",d.id,[{v:"ja",l:"Ja"},{v:"nein",l:"Nein"},{v:"unbekannt",l:"Vor Ort prüfen"}],d.stromVorOrt)+'</div>'+
+          '<div class="field"><label>Distanz Leser–Controller (m)</label><input type="number" min="0" data-id="'+d.id+'" data-field="distanzLeserController" value="'+escapeAttr(d.distanzLeserController)+'"></div>'+
+          '<div class="field"><label>Distanz zum nächsten Netzwerkanschluss (m)</label><input type="number" min="0" data-id="'+d.id+'" data-field="distanzNetzwerk" value="'+escapeAttr(d.distanzNetzwerk)+'"></div>'+
+          '<div class="field"><label>Kabeltyp</label>'+selectHTML("kabeltyp",d.id,[
+            {v:"JY(St)Y 2x2x0,8 (Bus)",l:"JY(St)Y 2x2x0,8 (Bus)"},
+            {v:"JY(St)Y 4x2x0,8 (Bus + Versorgung)",l:"JY(St)Y 4x2x0,8 (Bus + Versorgung)"},
+            {v:"Cat6/Cat6a (Netzwerk/PoE)",l:"Cat6/Cat6a (Netzwerk/PoE)"},
+            {v:"NYM 3x1,5 (230V Zuleitung)",l:"NYM 3x1,5 (230V Zuleitung)"},
+            {v:"Noch offen",l:"Noch offen"}
+          ],d.kabeltyp)+'</div>'+
+          '<div class="field"><label>Leerrohr/Kabelweg vorhanden</label>'+selectHTML("leerrohrVorhanden",d.id,[{v:"ja",l:"Ja"},{v:"nein",l:"Nein, neu verlegen"},{v:"teilweise",l:"Teilweise"},{v:"unbekannt",l:"Vor Ort prüfen"}],d.leerrohrVorhanden)+'</div>'+
+          '<div class="field"><label>Notstrom/Akku-Backup nötig</label>'+selectHTML("notstromAkku",d.id,[{v:"nein",l:"Nein"},{v:"ja",l:"Ja"}],d.notstromAkku)+'</div>'+
+        '</div></fieldset>'+
+
+        '<fieldset><legend>Sonderfunktionen &amp; Sicherheit</legend><div class="grid cols-4">'+
+          '<div class="field"><label>Anbindung Brandmeldeanlage</label>'+selectHTML("bmaAnbindung",d.id,[{v:"nein",l:"Nein"},{v:"ja",l:"Ja, Freigabe im Alarmfall"}],d.bmaAnbindung)+'</div>'+
+          '<div class="field"><label>Schleusenfunktion</label>'+selectHTML("schleusenfunktion",d.id,[{v:"nein",l:"Nein"},{v:"ja",l:"Ja"}],d.schleusenfunktion)+'</div>'+
+          '<div class="field"><label>Anti-Passback</label>'+selectHTML("antiPassback",d.id,[{v:"nein",l:"Nein"},{v:"ja",l:"Ja"}],d.antiPassback)+'</div>'+
+          '<div class="field"><label>Zeitsteuerung / Zeitzonen</label>'+selectHTML("zeitsteuerung",d.id,[{v:"nein",l:"Nein"},{v:"ja",l:"Ja"}],d.zeitsteuerung)+'</div>'+
+          '<div class="field"><label>Video-Türsprechstelle</label>'+selectHTML("videoSprechstelle",d.id,[{v:"nein",l:"Nein"},{v:"ja",l:"Ja"}],d.videoSprechstelle)+'</div>'+
+        '</div></fieldset>'+
+
+        '<div class="field"><label>Notizen zur Tür</label><textarea rows="2" data-id="'+d.id+'" data-field="notizen">'+(d.notizen||"")+'</textarea></div>'+
+
+        '<div class="warnings-box" data-warnbox="'+d.id+'">'+renderWarningsHTML(w)+'</div>'+
+      '</div>'+
+    '</div>';
+  }
+
+  function renderWarningsHTML(w){
+    if (!w.length) return '<div class="ok-note">Keine Auffälligkeiten erkannt.</div>';
+    return w.map(function(t){ return '<div class="warn-item">'+t+'</div>'; }).join("");
+  }
+
+  function getDoor(id){ return doors.find(function(d){ return String(d.id)===String(id); }); }
+
+  function renderDoors(){
+    const c = $("#doorsContainer");
+    c.innerHTML = doors.map(function(d,i){ return doorCardHTML(d,i); }).join("");
+    updateSummary();
+  }
+
+  function updateDoorHeader(id){
+    const d = getDoor(id);
+    const w = warningsForDoor(d);
+    const titleEl = document.querySelector('[data-titlefor="'+id+'"]');
+    if (titleEl) titleEl.textContent = d.bezeichnung || "Unbenannt";
+    const chipsEl = document.querySelector('[data-chipsfor="'+id+'"]');
+    if (chipsEl) chipsEl.innerHTML = doorBadges(d,w.length);
+    const warnEl = document.querySelector('[data-warnbox="'+id+'"]');
+    if (warnEl) warnEl.innerHTML = renderWarningsHTML(w);
+    return w.length;
+  }
+
+  function updateSummary(){
+    const total = doors.length;
+    let warnTotal = 0, fire=0, exitDoors=0, net=0;
+    doors.forEach(function(d){
+      warnTotal += warningsForDoor(d).length;
+      if (d.bmaAnbindung==="ja") fire++;
+      if (d.fluchtweg==="ja") exitDoors++;
+      if (d.leserSchnittstelle==="Netzwerk (IP-Leser/PoE)") net++;
+    });
+    const bar = $("#statBar");
+    bar.innerHTML =
+      '<span class="stat">Türen: '+total+'</span>'+
+      '<span class="stat">Netzwerk-Leser: '+net+'</span>'+
+      '<span class="stat">BMA-Anbindung: '+fire+'</span>'+
+      '<span class="stat">Fluchttüren: '+exitDoors+'</span>'+
+      '<span class="stat'+(warnTotal>0?' warn':'')+'">Warnungen: '+warnTotal+'</span>';
+
+    const noteEl = $("#projectNote");
+    const needsBetriebsrat = doors.some(function(d){ return d.identmedium.indexOf("Fingerprint")>-1 || d.identmedium.indexOf("Gesichtserkennung")>-1; }) || project.zeiterfassung==="ja";
+    noteEl.innerHTML = needsBetriebsrat
+      ? '<div class="note-box">Hinweis: Biometrische Identifikation und/oder Zeiterfassung sind mitbestimmungspflichtig (DSGVO Art. 9) – Betriebsrat/Datenschutzbeauftragten frühzeitig einbinden.</div>'
+      : '';
+  }
+
+  function fillProjectForm(){
+    $$("#projectSection [data-field]").forEach(function(el){
+      const f = el.dataset.field;
+      if (el.tagName==="SELECT" || el.tagName==="INPUT" || el.tagName==="TEXTAREA"){
+        el.value = project[f] != null ? project[f] : "";
+      }
+    });
+  }
+
+  // ---- events: project ----
+  $("#projectSection").addEventListener("input", function(e){
+    const f = e.target.dataset.field;
+    if (!f) return;
+    project[f] = e.target.value;
+    if (f==="zeiterfassung") updateSummary();
+  });
+  $("#projectSection").addEventListener("change", function(e){
+    const f = e.target.dataset.field;
+    if (!f) return;
+    project[f] = e.target.value;
+    updateSummary();
+  });
+
+  // ---- events: doors (delegated) ----
+  const doorsContainer = $("#doorsContainer");
+  doorsContainer.addEventListener("input", function(e){
+    const id = e.target.dataset.id, f = e.target.dataset.field;
+    if (!id || !f) return;
+    const d = getDoor(id);
+    if (!d) return;
+    if (e.target.type==="checkbox"){
+      const v = e.target.value;
+      const idx = d.identmedium.indexOf(v);
+      if (e.target.checked && idx===-1) d.identmedium.push(v);
+      if (!e.target.checked && idx>-1) d.identmedium.splice(idx,1);
+    } else {
+      d[f] = e.target.value;
+    }
+    updateDoorHeader(id);
+  });
+  doorsContainer.addEventListener("change", function(e){
+    const id = e.target.dataset.id, f = e.target.dataset.field;
+    if (!id || !f) return;
+    const d = getDoor(id);
+    if (!d) return;
+    if (e.target.tagName==="SELECT") d[f] = e.target.value;
+    updateDoorHeader(id);
+    updateSummary();
+  });
+  doorsContainer.addEventListener("click", function(e){
+    const toggleId = e.target.closest("[data-toggle]");
+    const removeId = e.target.closest("[data-remove]");
+    if (toggleId){
+      const id = toggleId.dataset.toggle;
+      const body = document.querySelector('[data-bodyfor="'+id+'"]');
+      const expanded = toggleId.getAttribute("aria-expanded")==="true";
+      toggleId.setAttribute("aria-expanded", expanded ? "false" : "true");
+      if (body) body.hidden = expanded;
+    }
+    if (removeId){
+      const id = removeId.dataset.remove;
+      if (confirm("Diese Tür aus der Planung entfernen?")){
+        doors = doors.filter(function(d){ return String(d.id)!==String(id); });
+        renderDoors();
+      }
+    }
+  });
+
+  function addDoor(){
+    const d = defaultDoor(nextId++);
+    doors.push(d);
+    renderDoors();
+    const el = document.querySelector('.door-card[data-id="'+d.id+'"] input[data-field="bezeichnung"]');
+    if (el) el.focus();
+  }
+  $("#addDoorBtn").addEventListener("click", addDoor);
+
+  // ---- export / import / print / share ----
+  function buildSummaryText(){
+    let lines = [];
+    lines.push("ZUTRITTSKONTROLLE — PLANUNGSÜBERSICHT");
+    lines.push("Projekt: "+(project.projekt||"–")+"  |  Kunde: "+(project.kunde||"–"));
+    lines.push("Adresse: "+(project.adresse||"–")+"  |  Datum: "+(project.datum||"–")+"  |  Techniker: "+(project.techniker||"–"));
+    lines.push("Architektur: "+project.architektur+"  |  Schutzbedarf: "+project.schutzbedarf);
+    lines.push("");
+    lines.push("Türen gesamt: "+doors.length);
+    doors.forEach(function(d,i){
+      lines.push("--- Tür "+(i+1)+": "+(d.bezeichnung||"Unbenannt")+" ("+d.geschossBereich+") ---");
+      lines.push("Typ: "+d.tuertyp+" | "+d.oeffnungsrichtung+" | Brandschutz: "+d.brandschutztuer+" | Fluchtweg: "+d.fluchtweg);
+      lines.push("Verriegelung: "+d.verriegelungstyp+" | Stromausfall: "+d.stromausfallVerhalten);
+      lines.push("Identmedien: "+(d.identmedium.join(", ")||"–")+" | Schnittstelle: "+d.leserSchnittstelle);
+      lines.push("Verkabelung: Leser-Controller "+(d.distanzLeserController||"?")+"m, Netzwerk "+(d.distanzNetzwerk||"?")+"m, Kabel: "+d.kabeltyp);
+      const w = warningsForDoor(d);
+      if (w.length) lines.push("Warnungen: "+w.join(" / "));
+      if (d.notizen) lines.push("Notiz: "+d.notizen);
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+
+  $("#printBtn").addEventListener("click", function(){
+    $$(".door-body").forEach(function(b){ b.hidden = false; });
+    $$('.door-toggle').forEach(function(t){ t.setAttribute("aria-expanded","true"); });
+    window.print();
+  });
+
+  $("#shareBtn").addEventListener("click", function(){
+    const text = buildSummaryText();
+    if (navigator.share){
+      navigator.share({ title: "Zutrittskontrolle Planung – "+(project.projekt||""), text: text }).catch(function(){});
+    } else {
+      const subject = encodeURIComponent("Zutrittskontrolle Planung – "+(project.projekt||""));
+      const body = encodeURIComponent(text);
+      window.location.href = "mailto:?subject="+subject+"&body="+body;
+    }
+  });
+
+  $("#saveBtn").addEventListener("click", function(){
+    const data = { project: project, doors: doors };
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = (project.projekt || "zutrittskontrolle-planung").replace(/[^a-z0-9_\-]+/gi,"_") + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  $("#loadBtn").addEventListener("click", function(){ $("#fileInput").click(); });
+  $("#fileInput").addEventListener("change", function(e){
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        const data = JSON.parse(ev.target.result);
+        project = Object.assign(defaultProject(), data.project||{});
+        doors = (data.doors||[]).map(function(d){ return Object.assign(defaultDoor(d.id||nextId++), d); });
+        doors.forEach(function(d){ if (d.id>=nextId) nextId = d.id+1; });
+        fillProjectForm();
+        renderDoors();
+      }catch(err){
+        alert("Datei konnte nicht gelesen werden: ungültiges Format.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  // ---- init ----
+  fillProjectForm();
+  addDoor();
+})();
+</script>
+</body>
+</html>
